@@ -15,7 +15,16 @@ const client = new ApolloClient({
   uri: 'https://learn.reboot01.com/api/graphql-engine/v1/graphql',
   cache: new InMemoryCache(),
   headers: {
-    'Authorization': `Bearer ${getToken()}`
+    'Authorization': `Bearer ${getToken()}`,
+    'Content-Type': 'application/json'
+  },
+  defaultOptions: {
+    watchQuery: {
+      fetchPolicy: 'network-only'
+    },
+    query: {
+      fetchPolicy: 'network-only'
+    }
   }
 });
 
