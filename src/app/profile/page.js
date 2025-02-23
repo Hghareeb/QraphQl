@@ -34,8 +34,7 @@ const GET_USER_DATA = gql`
       xp_transactions: transactions(
         where: { 
           userId: { _eq: $userId },
-          type: { _eq: "xp" },
-          eventId: { _eq: $eventId }
+          type: { _eq: "xp" }
         },
         order_by: { createdAt: desc }
       ) {
@@ -379,12 +378,11 @@ export default function Profile() {
       try {
         const base64Url = storedToken.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => 
-          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-        ).join(''));
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
         const decoded = JSON.parse(jsonPayload);
-        setUserId(decoded.user.id);
-        setEventId(decoded.user.eventId);
+        const uid = parseInt(decoded.sub);
+        setUserId(uid);
+        setEventId(20); // Setting to event ID 20 for the correct level data
       } catch (error) {
         console.error('Error extracting user ID:', error);
         if (typeof window !== 'undefined') {
@@ -402,10 +400,14 @@ export default function Profile() {
     router.push('/');
   };
 
+  console.log('Current token:', token);
+  console.log('Current userId:', userId);
+  console.log('Current eventId:', eventId);
+
   const { loading, error, data, refetch } = useQuery(GET_USER_DATA, {
     variables: {
-      userId: userId || 0,
-      eventId: eventId || 0
+      userId: userId,
+      eventId: eventId
     },
     context: {
       headers: {
@@ -425,7 +427,7 @@ export default function Profile() {
         router.push('/');
       }
     },
-    skip: !userId
+    skip: !userId || !token
   });
 
   useEffect(() => {
@@ -480,6 +482,8 @@ export default function Profile() {
   // Debug logging
   console.log('GraphQL Response:', data);
   console.log('User ID:', userId);
+  console.log('Event User Data:', data?.event_user);
+  console.log('Event ID:', eventId);
 
   // Access the first user from the array
   const user = data?.user?.[0];
