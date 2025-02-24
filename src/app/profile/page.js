@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { gql, useQuery, ApolloClient, InMemoryCache } from '@apollo/client';
+import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 const getToken = () => {
@@ -409,10 +410,6 @@ export default function Profile() {
     router.push('/');
   };
 
-  console.log('Current token:', token);
-  console.log('Current userId:', userId);
-  console.log('Current eventId:', eventId);
-
   const { loading, error, data, refetch } = useQuery(GET_USER_DATA, {
     variables: {
       userId: userId,
@@ -494,13 +491,55 @@ export default function Profile() {
   console.log('Event User Data:', data?.event_user);
   console.log('Event ID:', eventId);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center p-8 max-w-md mx-auto bg-white rounded-lg shadow-lg">
+          <div className="text-red-500 text-xl mb-4">Error loading profile data</div>
+          <p className="text-gray-600 mb-4">{error.message}</p>
+          <button
+            onClick={() => {
+              localStorage.removeItem('token');
+              router.push('/');
+            }}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            Return to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Access the first user from the array
   const user = data?.user?.[0];
   if (!user) {
-    console.error('No user data found');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-red-500">No user data found</div>
+        <div className="text-center p-8 max-w-md mx-auto bg-white rounded-lg shadow-lg">
+          <div className="text-red-500 text-xl mb-4">No user data found</div>
+          <p className="text-gray-600 mb-4">Unable to retrieve your profile information.</p>
+          <button
+            onClick={() => {
+              localStorage.removeItem('token');
+              router.push('/');
+            }}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            Return to Login
+          </button>
+        </div>
       </div>
     );
   }
@@ -522,22 +561,56 @@ export default function Profile() {
   console.log('Skills:', user.skills);
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-white relative overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden">
+        <motion.div
+          className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff,#f3e8ff,#e9d5ff,#ffffff)]"
+          animate={{
+            x: ["0%", "-100%"],
+            transition: { repeat: Number.POSITIVE_INFINITY, duration: 30, ease: "linear" },
+          }}
+          style={{ opacity: 0.3 }}
+        />
+        <motion.div
+          className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff,#fdf4ff,#fae8ff,#ffffff)]"
+          animate={{
+            x: ["100%", "0%"],
+            transition: { repeat: Number.POSITIVE_INFINITY, duration: 25, ease: "linear" },
+          }}
+          style={{ opacity: 0.3 }}
+        />
+      </div>
+      <div className="relative">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-700 to-purple-800 relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:16px_16px]"></div>
-        <div className="absolute h-full w-full bg-gradient-to-b from-black/[0.07] to-black/[0.1]"></div>
+      <div className="bg-white relative overflow-hidden shadow-sm">
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.div
+            className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff,#f3e8ff,#e9d5ff,#ffffff)]"
+            animate={{
+              x: ["0%", "-100%"],
+              transition: { repeat: Number.POSITIVE_INFINITY, duration: 20, ease: "linear" },
+            }}
+          />
+          <motion.div
+            className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff,#fdf4ff,#fae8ff,#ffffff)]"
+            animate={{
+              x: ["100%", "0%"],
+              transition: { repeat: Number.POSITIVE_INFINITY, duration: 15, ease: "linear" },
+            }}
+          />
+          <div className="absolute inset-0 backdrop-blur-[80px]" />
+        </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
             <div className="flex items-center space-x-4">
               <div className="relative group">
-                <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/10 transition-transform duration-300 transform group-hover:scale-105 bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-purple-200 transition-transform duration-300 transform group-hover:scale-105 bg-gradient-to-r from-purple-600 to-fuchsia-500 flex items-center justify-center shadow-lg">
                   <span className="text-2xl font-bold text-white">
                     {user.login?.[0]?.toUpperCase()}
                   </span>
                 </div>
                 <div className="absolute -bottom-1 -right-1">
-                  <div className="w-5 h-5 rounded-full bg-green-500 ring-2 ring-indigo-900 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full bg-green-500 ring-2 ring-white flex items-center justify-center shadow-sm">
                     <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                     </svg>
@@ -545,20 +618,20 @@ export default function Profile() {
                 </div>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white mb-0.5 flex items-center">
+                <h1 className="text-2xl font-bold text-gray-900 mb-0.5 flex items-center">
                   {user.firstName} {user.lastName}
-                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-white/10 text-white/90">
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
                     {user.login}
                   </span>
                 </h1>
                 <div className="flex items-center space-x-3">
-                  <div className="flex items-center text-indigo-100/80 text-sm">
+                  <div className="flex items-center text-gray-600 text-sm">
                     <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                     <span>{user.email}</span>
                   </div>
-                  <div className="flex items-center text-indigo-100/80 text-sm">
+                  <div className="flex items-center text-gray-600 text-sm">
                     <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -569,7 +642,7 @@ export default function Profile() {
             </div>
             <div className="flex space-x-2">
               <button 
-                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors duration-200 flex items-center"
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-fuchsia-500 hover:from-purple-700 hover:to-fuchsia-600 text-white text-sm font-medium rounded-lg shadow-sm transition-all duration-200 flex items-center"
                 onClick={() => window.open('https://learn.reboot01.com/intra', '_blank')}
               >
                 <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -578,7 +651,7 @@ export default function Profile() {
                 View Intra
               </button>
               <button 
-                className="px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-100 text-sm rounded-lg transition-colors duration-200 flex items-center"
+                className="px-4 py-2 bg-white/90 hover:bg-white text-gray-700 hover:text-gray-900 text-sm font-medium rounded-lg shadow-sm ring-1 ring-gray-900/5 transition-all duration-200 flex items-center"
                 onClick={handleLogout}
               >
                 <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -591,11 +664,11 @@ export default function Profile() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
         {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           {/* Total XP */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm ring-1 ring-black/5 p-6 hover:bg-white/90 transition-colors duration-200">
             <div className="flex items-center">
               <div className="w-12 h-12 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -617,7 +690,7 @@ export default function Profile() {
           </div>
 
           {/* Audit Ratio */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm ring-1 ring-black/5 p-6 hover:bg-white/90 transition-colors duration-200">
             <div className="flex items-center">
               <div className="w-12 h-12 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -637,7 +710,7 @@ export default function Profile() {
           </div>
 
           {/* Audits Done */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm ring-1 ring-black/5 p-6 hover:bg-white/90 transition-colors duration-200">
             <div className="flex items-center">
               <div className="w-12 h-12 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -645,7 +718,7 @@ export default function Profile() {
                 </svg>
               </div>
               <div className="ml-4">
-                <h2 className="text-sm font-medium text-gray-500">Completed</h2>
+                <h2 className="text-sm font-medium text-gray-500">Audits Completed</h2>
                 <div className="flex items-center">
                   <p className="text-2xl font-bold text-gray-900">
                     {user.audits?.nodes?.filter(a => a.grade >= 1)?.length || 0}
@@ -659,7 +732,7 @@ export default function Profile() {
           </div>
 
           {/* Projects Completed */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm ring-1 ring-black/5 p-6 hover:bg-white/90 transition-colors duration-200">
             <div className="flex items-center">
               <div className="w-12 h-12 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1003,29 +1076,29 @@ export default function Profile() {
                   {displayedTransactions.map((transaction) => (
                     <div
                       key={transaction.path}
-                      className="flex items-center justify-between p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                      className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors gap-4"
                     >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                      <div className="flex items-start space-x-4 w-full sm:w-auto">
+                        <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                           </svg>
                         </div>
-                        <div>
-                          <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between">
                             <p className="text-sm font-medium text-gray-900 truncate group-hover:text-blue-600 transition-colors">
                               {formatTransactionName(transaction.path)}
                             </p>
-                            <span className="ml-2 flex-shrink-0 text-sm text-gray-500">
+                            <span className="text-sm text-gray-500 mt-1 sm:mt-0 sm:ml-2">
                               {new Date(transaction.createdAt).toLocaleDateString()}
                             </span>
                           </div>
-                          <div className="flex items-center mt-1">
-                            <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-0.5 rounded-full whitespace-nowrap">
                               +{transaction.amount?.toLocaleString()}
                             </span>
                             {transaction.path && (
-                              <span className="ml-2 text-xs text-gray-500 truncate">
+                              <span className="text-xs text-gray-500 truncate max-w-[200px] sm:max-w-[300px]">
                                 {transaction.path.replace('/bahrain/bh-module', '').split('/').filter(Boolean).slice(0, -1).join('/')}
                               </span>
                             )}
@@ -1034,7 +1107,7 @@ export default function Profile() {
                       </div>
                       <button
                         onClick={() => window.open(`https://learn.reboot01.com${transaction.path}`, '_blank')}
-                        className="ml-4 p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200 transition-all duration-200"
+                        className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200 transition-all duration-200 sm:ml-4"
                         title="View Transaction"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1048,6 +1121,7 @@ export default function Profile() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </main>
   );
